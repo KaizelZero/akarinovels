@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
+import { useState, useEffect } from "react";
 import {
 	Flex,
 	useColorMode,
@@ -9,16 +10,14 @@ import {
 	Menu,
 	MenuButton,
 	MenuList,
-	MenuGroup,
 	MenuItem,
-	MenuDivider,
 	Avatar,
 } from "@chakra-ui/react";
+import Search from "./Search";
 
 function Navbar() {
 	const supabase = useSupabaseClient();
 	const session = useSession();
-	const { colorMode, toggleColorMode } = useColorMode();
 	const lineColor = useColorModeValue("black", "#EAEAEA");
 
 	async function signInWithDiscord() {
@@ -62,7 +61,7 @@ function Navbar() {
 			top={0}
 			zIndex={1}
 			borderBottom={`1px solid ${lineColor}`}
-			bg={useColorModeValue("white", "gray.800")}
+			bg={useColorModeValue("gray.800", "gray.800")}
 		>
 			<Flex align={"center"} mr={5}>
 				{/* <Image src={"/favicon.ico"} alt={"logo"} width={50} height={50} /> */}
@@ -74,9 +73,10 @@ function Navbar() {
 			</Flex>
 
 			<Flex align={"center"}>
-				<Button colorScheme="teal" onClick={toggleColorMode} className="mr-6">
-					Button
-				</Button>
+				<Search />
+			</Flex>
+
+			<Flex align={"center"}>
 				<Link href={"/novels"}>
 					<Button colorScheme="teal" variant="outline" className="mr-6">
 						Novels
@@ -92,7 +92,14 @@ function Navbar() {
 								size="md"
 							/>
 							<MenuList>
-								<MenuItem>{session.user.user_metadata.name}</MenuItem>
+								<Link
+									href={{
+										pathname: "/profile",
+										query: { id: session.user.user_metadata.name },
+									}}
+								>
+									<MenuItem>{session.user.user_metadata.name}</MenuItem>
+								</Link>
 								<MenuItem>Novel List</MenuItem>
 								<MenuItem onClick={signOut}>Logout</MenuItem>
 							</MenuList>
