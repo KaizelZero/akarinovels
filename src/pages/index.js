@@ -1,7 +1,12 @@
 import Head from "next/head";
 import Image from "next/image";
+import { useColorMode, Button } from "@chakra-ui/react";
+import { useSession } from "@supabase/auth-helpers-react";
 
 export default function Home() {
+	const { colorMode, toggleColorMode } = useColorMode();
+	const session = useSession();
+
 	return (
 		<>
 			<Head>
@@ -10,7 +15,12 @@ export default function Home() {
 				<meta name="viewport" content="width=device-width, initial-scale=1" />
 				<link rel="icon" href="/favicon.ico" />
 			</Head>
-			<div className="text-3xl">Hello World</div>
+			<div className="">
+				Hello World
+				<Button colorScheme="teal" onClick={toggleColorMode}>
+					Button
+				</Button>
+			</div>
 		</>
 	);
 }

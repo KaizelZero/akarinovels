@@ -1,9 +1,8 @@
 import "@/styles/globals.css";
-import { ChakraProvider } from "@chakra-ui/react";
 import { createBrowserSupabaseClient } from "@supabase/auth-helpers-nextjs";
 import { SessionContextProvider } from "@supabase/auth-helpers-react";
 import { useState } from "react";
-import Layout from "../components/Layout";
+import Layout from "@/components/Layout";
 
 function MyApp({ Component, pageProps }) {
 	const [supabaseClient] = useState(() => createBrowserSupabaseClient());
@@ -14,9 +13,7 @@ function MyApp({ Component, pageProps }) {
 			initialSession={pageProps.initialSession}
 		>
 			<Layout>
-				<ChakraProvider>
-					<Component {...pageProps} />
-				</ChakraProvider>
+				<Component {...pageProps} />
 			</Layout>
 		</SessionContextProvider>
 	);
