@@ -2,8 +2,28 @@ import { useRouter } from "next/router";
 import supabase from "@/utils/supabase";
 import Head from "next/head";
 import Banner from "@/components/Banner";
-import { Button } from "@chakra-ui/react";
+import {
+	Button,
+	Modal,
+	ModalOverlay,
+	ModalContent,
+	ModalHeader,
+	ModalFooter,
+	ModalBody,
+	ModalCloseButton,
+	FormControl,
+	Input,
+	NumberInput,
+	NumberInputField,
+	NumberInputStepper,
+	NumberIncrementStepper,
+	NumberDecrementStepper,
+	FormLabel,
+	Select,
+} from "@chakra-ui/react";
 import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
+import { useState, useEffect } from "react";
+import { useDisclosure } from "@chakra-ui/react";
 
 export async function getServerSideProps(context) {
 	const { id } = context.query;
@@ -25,6 +45,13 @@ export default function Novel({ novel }) {
 	const router = useRouter();
 	const { id } = router.query;
 	const session = useSession();
+	const [isInLibrary, setIsInLibrary] = useState(false);
+	const [status, setStatus] = useState("");
+	const [score, setScore] = useState();
+	const [progress, setProgress] = useState();
+	const [dateStarted, setDateStarted] = useState("");
+	const [dateFinished, setDateFinished] = useState("");
+	const { isOpen, onOpen, onClose } = useDisclosure();
 
 	const addToLibrary = async () => {
 		const { data, error } = await supabase
@@ -39,8 +66,54 @@ export default function Novel({ novel }) {
 					user_id: session.user.id,
 					novel_id: id,
 					username: session.user.user_metadata.name,
+					status: status,
+					score: score,
+					progress: progress,
+					date_started: dateStarted,
+					date_finished: dateFinished,
 				},
 			]);
+
+			if (error) {
+				console.log(error);
+			} else {
+				console.log(data);
+			}
+		}
+	};
+
+	useEffect(() => {
+		if (session) {
+			const checkLibrary = async () => {
+				const { data, error } = await supabase
+					.from("Library")
+					.select("*")
+					.eq("user_id", session.user.id)
+					.eq("novel_id", id);
+
+				if (data?.length === 0 || data === null) {
+					setIsInLibrary(false);
+				} else {
+					setIsInLibrary(true);
+					setScore(data[0].score);
+					setStatus(data[0].status);
+					setProgress(data[0].progress);
+					setDateStarted(data[0].date_started);
+					setDateFinished(data[0].date_finished);
+				}
+			};
+
+			checkLibrary();
+		}
+	}, [session]);
+
+	const deleteFromLibrary = async () => {
+		if (session && isInLibrary) {
+			const { data, error } = await supabase
+				.from("Library")
+				.delete()
+				.eq("user_id", session.user.id)
+				.eq("novel_id", id);
 
 			if (error) {
 				console.log(error);
@@ -69,7 +142,107 @@ export default function Novel({ novel }) {
 						width="286px"
 						height="400px"
 					/>
-					{session && <Button onClick={addToLibrary}>Add To Library</Button>}
+					{session && <Button onClick={onOpen}>Add To Library</Button>}
+					<Modal isOpen={isOpen} onClose={onClose}>
+						<ModalOverlay />
+						<ModalContent>
+							<ModalHeader>{novel.title}</ModalHeader>
+							<ModalCloseButton />
+							<ModalBody>
+								<FormControl
+									id="status"
+									isRequired
+									display="flex"
+									flexDirection="column"
+								>
+									<label>Status</label>
+									<Select
+										value={status}
+										onChange={(e) => setStatus(e.target.value)}
+										placeholder="Select Status"
+										variant={"filled"}
+									>
+										<option value="Reading">Reading</option>
+										<option value="Plan to Read">Plan to Read</option>
+										<option value="Completed">Completed</option>
+										<option value="On Hold">On Hold</option>
+										<option value="Dropped">Dropped</option>
+									</Select>
+
+									<label>Score</label>
+									<NumberInput
+										max={10}
+										min={0}
+										value={score}
+										onChange={(value) => setScore(value)}
+									>
+										<NumberInputField />
+										<NumberInputStepper>
+											<NumberIncrementStepper />
+											<NumberDecrementStepper />
+										</NumberInputStepper>
+									</NumberInput>
+
+									<label>Progress</label>
+									<NumberInput
+										max={novel.chapters}
+										min={0}
+										value={progress}
+										onChange={(value) => setProgress(value)}
+									>
+										<NumberInputField />
+										<NumberInputStepper>
+											<NumberIncrementStepper />
+											<NumberDecrementStepper />
+										</NumberInputStepper>
+									</NumberInput>
+
+									<label>Date Started</label>
+									<Input
+										placeholder="Select Date"
+										size="md"
+										type="date"
+										value={dateStarted}
+										onChange={(e) => setDateStarted(e.target.value)}
+									/>
+
+									<label>Date Finished</label>
+									<Input
+										placeholder="Select Date"
+										size="md"
+										type="date"
+										value={dateFinished}
+										onChange={(e) => setDateFinished(e.target.value)}
+									/>
+								</FormControl>
+							</ModalBody>
+							<ModalFooter>
+								<Button
+									variant="ghost"
+									onClick={async () => {
+										await addToLibrary();
+										onClose();
+									}}
+									size="sm"
+									mr={3}
+								>
+									Save
+								</Button>
+								<Button
+									variant={"ghost"}
+									colorScheme="red"
+									onClick={async () => {
+										await deleteFromLibrary();
+										onClose();
+									}}
+									size="sm"
+								>
+									Delete
+								</Button>
+							</ModalFooter>
+						</ModalContent>
+					</Modal>
+
 					<div className="flex flex-col items-center">
 						<h1 className="text-2xl font-bold">{novel.title}</h1>
 						<h2 className="text-xl font-bold">{novel.author}</h2>

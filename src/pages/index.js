@@ -1,11 +1,9 @@
 import Head from "next/head";
 import Image from "next/image";
-import { useColorMode, Button } from "@chakra-ui/react";
 import { useSession } from "@supabase/auth-helpers-react";
 import Banner from "@/components/Banner";
 
 export default function Home() {
-	const { colorMode, toggleColorMode } = useColorMode();
 	const session = useSession();
 
 	return (
@@ -17,13 +15,6 @@ export default function Home() {
 				<link rel="icon" href="/favicon.ico" />
 			</Head>
 			<Banner title={"Welcome"} file={"/images/HomeBanner.webp"} />
-
-			<div className="">
-				Hello World
-				<Button colorScheme="teal" onClick={toggleColorMode}>
-					Button
-				</Button>
-			</div>
 		</>
 	);
 }

@@ -30,7 +30,7 @@ export default function Search() {
 	const [results, setResults] = useState([]);
 	const [loading, setLoading] = useState(false);
 	const { isOpen, onToggle, onClose } = useDisclosure();
-	const [selectedIndex, setSelectedIndex] = useState(-1);
+	const [selectedIndex, setSelectedIndex] = useState(0);
 	const dropdownRef = useRef();
 
 	const router = useRouter();
@@ -56,6 +56,12 @@ export default function Search() {
 	}, [search]);
 
 	const handleKeyDown = (e) => {
+		if (e.key === "Escape") {
+			onClose();
+			document.getElementById("searchBar").blur();
+			setSearch("");
+		}
+
 		if (!dropdownRef.current || !results?.length) return;
 
 		switch (e.key) {
@@ -68,10 +74,12 @@ export default function Search() {
 				setSelectedIndex((selectedIndex - 1 + results.length) % results.length);
 				break;
 			case "Enter":
-				router.push(`/novels/${results[selectedIndex].id}`);
-				onClose();
-				document.getElementById("searchBar").blur();
-				setSearch("");
+				if (results[selectedIndex]) {
+					router.push(`/novels/${results[selectedIndex].id}`);
+					onClose();
+					document.getElementById("searchBar").blur();
+					setSearch("");
+				}
 				break;
 			default:
 				break;
@@ -100,6 +108,7 @@ export default function Search() {
 								aria-label="Search"
 								icon={<HiSearch />}
 								onClick={() => {
+									if (search.length === 0) return;
 									router.push(`/search?query=${search}`);
 									onClose();
 									setSearch("");
