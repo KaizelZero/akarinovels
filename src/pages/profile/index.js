@@ -63,8 +63,8 @@ export default function Profile() {
 	const [status, setStatus] = useState("");
 	const [score, setScore] = useState();
 	const [progress, setProgress] = useState();
-	const [dateStarted, setDateStarted] = useState("");
-	const [dateFinished, setDateFinished] = useState("");
+	const [dateStarted, setDateStarted] = useState();
+	const [dateFinished, setDateFinished] = useState();
 	const [novelTitle, setNovelTitle] = useState("");
 	const [selectedNovel, setSelectedNovel] = useState("");
 
@@ -165,141 +165,141 @@ export default function Profile() {
 					</Thead>
 					<Tbody>
 						{novels.map((novel) => (
-							<>
-								<Tr key={novel.novel_id}>
-									<Td>
-										<FaEllipsisH className="hidden hover:flex" />
-										<img
-											src={novel.Novels.cover}
-											alt={novel.Novels.title}
-											style={{
-												width: "50px",
-												height: "50px",
-												objectFit: "cover",
-											}}
-											className="cursor-pointer rounded-md hover:opacity-60 hover:shadow-lg"
-											onClick={async () => {
-												if (profile == session?.user.user_metadata.name) {
-													await getNovel(novel.novel_id);
-													setSelectedNovel(novel.novel_id);
-													onOpen();
-												}
-											}}
-										/>
-										<Modal isOpen={isOpen} onClose={onClose}>
-											<ModalOverlay />
-											<ModalContent>
-												<ModalHeader>{novelTitle}</ModalHeader>
-												<ModalCloseButton />
-												<ModalBody>
-													<FormControl
-														id="status"
-														isRequired
-														display="flex"
-														flexDirection="column"
+							<Tr key={novel.novel_id}>
+								<Td>
+									<FaEllipsisH className="hidden hover:flex" />
+									<img
+										src={novel.Novels.cover}
+										alt={novel.Novels.title}
+										style={{
+											width: "50px",
+											height: "50px",
+											objectFit: "cover",
+										}}
+										className="cursor-pointer rounded-md hover:opacity-60 hover:shadow-lg"
+										onClick={async () => {
+											if (profile == session?.user.user_metadata.name) {
+												await getNovel(novel.novel_id);
+												setSelectedNovel(novel.novel_id);
+												onOpen();
+											}
+										}}
+									/>
+									<Modal isOpen={isOpen} onClose={onClose}>
+										<ModalOverlay />
+										<ModalContent>
+											<ModalHeader>{novelTitle}</ModalHeader>
+											<ModalCloseButton />
+											<ModalBody>
+												<FormControl
+													id="status"
+													isRequired
+													display="flex"
+													flexDirection="column"
+												>
+													<label>Status</label>
+													<Select
+														value={status}
+														onChange={(e) => setStatus(e.target.value)}
+														variant={"filled"}
+														defaultValue={
+															novel.status ? novel.status : "Reading"
+														}
 													>
-														<label>Status</label>
-														<Select
-															value={status}
-															onChange={(e) => setStatus(e.target.value)}
-															placeholder="Select Status"
-															variant={"filled"}
-														>
-															<option value="Reading">Reading</option>
-															<option value="Plan to Read">Plan to Read</option>
-															<option value="Completed">Completed</option>
-															<option value="On Hold">On Hold</option>
-															<option value="Dropped">Dropped</option>
-														</Select>
+														<option value="Reading">Reading</option>
+														<option value="Plan to Read">Plan to Read</option>
+														<option value="Completed">Completed</option>
+														<option value="On Hold">On Hold</option>
+														<option value="Dropped">Dropped</option>
+													</Select>
 
-														<label>Score</label>
-														<NumberInput
-															max={10}
-															min={0}
-															value={score}
-															onChange={(value) => setScore(value)}
-														>
-															<NumberInputField />
-															<NumberInputStepper>
-																<NumberIncrementStepper />
-																<NumberDecrementStepper />
-															</NumberInputStepper>
-														</NumberInput>
-
-														<label>Progress</label>
-														<NumberInput
-															max={novel.chapters}
-															min={0}
-															value={progress}
-															onChange={(value) => setProgress(value)}
-														>
-															<NumberInputField />
-															<NumberInputStepper>
-																<NumberIncrementStepper />
-																<NumberDecrementStepper />
-															</NumberInputStepper>
-														</NumberInput>
-
-														<label>Date Started</label>
-														<Input
-															placeholder="Select Date"
-															size="md"
-															type="date"
-															value={dateStarted}
-															onChange={(e) => setDateStarted(e.target.value)}
-														/>
-
-														<label>Date Finished</label>
-														<Input
-															placeholder="Select Date"
-															size="md"
-															type="date"
-															value={dateFinished}
-															onChange={(e) => setDateFinished(e.target.value)}
-														/>
-													</FormControl>
-												</ModalBody>
-												<ModalFooter>
-													<Button
-														variant="ghost"
-														onClick={async () => {
-															await updateNovel(selectedNovel);
-															// refresh the page
-															window.location.reload();
-															onClose();
-														}}
-														size="sm"
-														mr={3}
+													<label>Score</label>
+													<NumberInput
+														max={10}
+														min={0}
+														value={score || 0}
+														onChange={(value) => setScore(value)}
 													>
-														Save
-													</Button>
-													<Button
-														variant={"ghost"}
-														colorScheme="red"
-														onClick={async () => {
-															await deleteNovel(selectedNovel);
-															// refresh the page
-															window.location.reload();
-															onClose();
-														}}
-														size="sm"
+														<NumberInputField />
+														<NumberInputStepper>
+															<NumberIncrementStepper />
+															<NumberDecrementStepper />
+														</NumberInputStepper>
+													</NumberInput>
+
+													<label>Progress</label>
+													<NumberInput
+														max={novel.chapters}
+														min={0}
+														value={progress || 0}
+														onChange={(value) => setProgress(value)}
 													>
-														Delete
-													</Button>
-												</ModalFooter>
-											</ModalContent>
-										</Modal>
-									</Td>
-									<Td>
-										<Link href={`/novels/${novel.Novels.id}`}>
-											{novel.Novels.title}
-										</Link>
-									</Td>
-									<Td>{novel.status}</Td>
-									<Td isNumeric>{novel.score}</Td>
-									<Td isNumeric>{novel.progress}</Td>
-								</Tr>
-							</>
+														<NumberInputField />
+														<NumberInputStepper>
+															<NumberIncrementStepper />
+															<NumberDecrementStepper />
+														</NumberInputStepper>
+													</NumberInput>
+
+													<label>Date Started</label>
+													<Input
+														placeholder="Select Date"
+														size="md"
+														type="date"
+														value={dateStarted ? dateStarted : ""}
+														onChange={(e) => setDateStarted(e.target.value)}
+													/>
+
+													<label>Date Finished</label>
+													<Input
+														placeholder="Select Date"
+														size="md"
+														type="date"
+														value={dateFinished ? dateFinished : ""}
+														onChange={(e) => setDateFinished(e.target.value)}
+													/>
+												</FormControl>
+											</ModalBody>
+											<ModalFooter>
+												<Button
+													variant={"ghost"}
+													colorScheme="red"
+													onClick={async () => {
+														await deleteNovel(selectedNovel);
+														// refresh the page
+														window.location.reload();
+														onClose();
+													}}
+													size="sm"
+												>
+													Delete
+												</Button>
+												<Button
+													variant="ghost"
+													onClick={async () => {
+														await updateNovel(selectedNovel);
+														// refresh the page
+														window.location.reload();
+														onClose();
+													}}
+													size="sm"
+													mr={3}
+												>
+													Save
+												</Button>
+											</ModalFooter>
+										</ModalContent>
+									</Modal>
+								</Td>
+								<Td>
+									<Link href={`/novels/${novel.Novels.id}`}>
+										{novel.Novels.title}
+									</Link>
+								</Td>
+								<Td>{novel.status}</Td>
+								<Td isNumeric>{novel.score}</Td>
+								<Td isNumeric>{novel.progress}</Td>
+							</Tr>
 						))}
 					</Tbody>
 				</Table>

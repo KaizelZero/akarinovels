@@ -19,6 +19,7 @@ function Navbar() {
 	const supabase = useSupabaseClient();
 	const session = useSession();
 	const lineColor = useColorModeValue("black", "#EAEAEA");
+	const [isAdmin, setIsAdmin] = useState(false);
 
 	async function signInWithDiscord() {
 		const { error } = await supabase.auth.signInWithOAuth({
@@ -44,6 +45,16 @@ function Navbar() {
 						name: session.user.user_metadata.name,
 					},
 				]);
+			} else {
+				const { data, error } = await supabase
+					.from("Users")
+					.select("admin")
+					.eq("id", session.user.id)
+					.single();
+
+				if (data.admin === true) {
+					setIsAdmin(true);
+				}
 			}
 		}
 	});
@@ -100,7 +111,11 @@ function Navbar() {
 								>
 									<MenuItem>{session.user.user_metadata.name}</MenuItem>
 								</Link>
-								<MenuItem>Novel List</MenuItem>
+								{isAdmin ? (
+									<Link href={"/admin"}>
+										<MenuItem>Admin</MenuItem>
+									</Link>
+								) : null}
 								<MenuItem onClick={signOut}>Logout</MenuItem>
 							</MenuList>
 						</Menu>

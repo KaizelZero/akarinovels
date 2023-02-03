@@ -18,8 +18,8 @@ import {
 	NumberInputStepper,
 	NumberIncrementStepper,
 	NumberDecrementStepper,
-	FormLabel,
 	Select,
+	Textarea,
 } from "@chakra-ui/react";
 import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
 import { useState, useEffect } from "react";
@@ -46,12 +46,14 @@ export default function Novel({ novel }) {
 	const { id } = router.query;
 	const session = useSession();
 	const [isInLibrary, setIsInLibrary] = useState(false);
-	const [status, setStatus] = useState("");
+	const [status, setStatus] = useState("Reading");
 	const [score, setScore] = useState();
 	const [progress, setProgress] = useState();
-	const [dateStarted, setDateStarted] = useState("");
-	const [dateFinished, setDateFinished] = useState("");
+	const [dateStarted, setDateStarted] = useState();
+	const [dateFinished, setDateFinished] = useState();
 	const { isOpen, onOpen, onClose } = useDisclosure();
+
+	const [isAdmin, setIsAdmin] = useState(false);
 
 	const addToLibrary = async () => {
 		const { data, error } = await supabase
@@ -73,6 +75,24 @@ export default function Novel({ novel }) {
 					date_finished: dateFinished,
 				},
 			]);
+
+			if (error) {
+				console.log(error);
+			} else {
+				console.log(data);
+			}
+		} else {
+			const { data, error } = await supabase
+				.from("Library")
+				.update({
+					status: status,
+					score: score,
+					progress: progress,
+					date_started: dateStarted,
+					date_finished: dateFinished,
+				})
+				.eq("user_id", session.user.id)
+				.eq("novel_id", id);
 
 			if (error) {
 				console.log(error);
@@ -103,6 +123,19 @@ export default function Novel({ novel }) {
 				}
 			};
 
+			const checkAdmin = async () => {
+				const { data, error } = await supabase
+					.from("Users")
+					.select("admin")
+					.eq("id", session.user.id)
+					.single();
+
+				if (data.admin) {
+					setIsAdmin(true);
+				}
+			};
+
+			checkAdmin();
 			checkLibrary();
 		}
 	}, [session]);
@@ -142,7 +175,12 @@ export default function Novel({ novel }) {
 						width="286px"
 						height="400px"
 					/>
-					{session && <Button onClick={onOpen}>Add To Library</Button>}
+					{session && !isInLibrary && (
+						<Button onClick={onOpen}>Add To Library</Button>
+					)}
+					{session && isInLibrary && <Button onClick={onOpen}>{status}</Button>}
+					{session && isAdmin && <EditNovel novel={novel} />}
+
 					<Modal isOpen={isOpen} onClose={onClose}>
 						<ModalOverlay />
 						<ModalContent>
@@ -159,7 +197,6 @@ export default function Novel({ novel }) {
 									<Select
 										value={status}
 										onChange={(e) => setStatus(e.target.value)}
-										placeholder="Select Status"
 										variant={"filled"}
 									>
 										<option value="Reading">Reading</option>
@@ -173,7 +210,7 @@ export default function Novel({ novel }) {
 									<NumberInput
 										max={10}
 										min={0}
-										value={score}
+										value={score || 0}
 										onChange={(value) => setScore(value)}
 									>
 										<NumberInputField />
@@ -187,7 +224,7 @@ export default function Novel({ novel }) {
 									<NumberInput
 										max={novel.chapters}
 										min={0}
-										value={progress}
+										value={progress || 0}
 										onChange={(value) => setProgress(value)}
 									>
 										<NumberInputField />
@@ -218,26 +255,28 @@ export default function Novel({ novel }) {
 							</ModalBody>
 							<ModalFooter>
 								<Button
+									variant={"ghost"}
+									colorScheme="red"
+									onClick={async () => {
+										await deleteFromLibrary();
+										window.location.reload();
+										onClose();
+									}}
+									size="sm"
+								>
+									Delete
+								</Button>
+								<Button
 									variant="ghost"
 									onClick={async () => {
 										await addToLibrary();
+										window.location.reload();
 										onClose();
 									}}
 									size="sm"
 									mr={3}
 								>
 									Save
-								</Button>
-								<Button
-									variant={"ghost"}
-									colorScheme="red"
-									onClick={async () => {
-										await deleteFromLibrary();
-										onClose();
-									}}
-									size="sm"
-								>
-									Delete
 								</Button>
 							</ModalFooter>
 						</ModalContent>
@@ -253,6 +292,99 @@ export default function Novel({ novel }) {
 					<p className="text-xl">{novel.description}</p>
 				</div>
 			</div>
+		</>
+	);
+}
+
+function EditNovel({ novel }) {
+	const {
+		isOpen: isEditOpen,
+		onOpen: onEditOpen,
+		onClose: onEditClose,
+	} = useDisclosure();
+
+	const [title, setTitle] = useState(novel.title);
+	const [author, setAuthor] = useState(novel.author);
+	const [cover, setCover] = useState(novel.cover);
+	const [description, setDescription] = useState(novel.description);
+	const [id, setId] = useState(novel.id);
+
+	const updateNovel = async () => {
+		const { data, error } = await supabase
+			.from("Novels")
+			.update({
+				title: title,
+				author: author,
+				cover: cover,
+				description: description,
+			})
+			.eq("id", id);
+
+		if (error) {
+			console.log(error);
+		} else {
+			console.log(data);
+		}
+	};
+
+	return (
+		<>
+			<Button onClick={onEditOpen}>Edit Novel</Button>
+
+			<Modal isOpen={isEditOpen} onClose={onEditClose}>
+				<ModalOverlay />
+				<ModalContent>
+					<ModalHeader>Edit Novel</ModalHeader>
+					<ModalCloseButton />
+					<ModalBody>
+						<FormControl id="title" isRequired>
+							<label>Title</label>
+							<Input
+								type="text"
+								value={title}
+								onChange={(e) => setTitle(e.target.value)}
+							/>
+						</FormControl>
+						<FormControl id="author" isRequired>
+							<label>Author</label>
+							<Input
+								type="text"
+								value={author}
+								onChange={(e) => setAuthor(e.target.value)}
+							/>
+						</FormControl>
+						<FormControl id="cover" isRequired>
+							<label>Cover</label>
+							<Input
+								type="text"
+								value={cover}
+								onChange={(e) => setCover(e.target.value)}
+							/>
+						</FormControl>
+						<FormControl id="description" isRequired>
+							<label>Description</label>
+							<Textarea
+								value={description}
+								onChange={(e) => setDescription(e.target.value)}
+							/>
+						</FormControl>
+					</ModalBody>
+					<ModalFooter>
+						<Button
+							variant={"ghost"}
+							colorScheme="red"
+							onClick={async () => {
+								await updateNovel();
+								window.location.reload();
+								onEditClose();
+							}}
+							size="sm"
+						>
+							Update
+						</Button>
+					</ModalFooter>
+				</ModalContent>
+			</Modal>
 		</>
 	);
 }
