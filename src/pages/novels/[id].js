@@ -20,6 +20,8 @@ import {
 	NumberDecrementStepper,
 	Select,
 	Textarea,
+	useToast,
+	HStack,
 } from "@chakra-ui/react";
 import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
 import { useState, useEffect } from "react";
@@ -52,8 +54,8 @@ export default function Novel({ novel }) {
 	const [dateStarted, setDateStarted] = useState();
 	const [dateFinished, setDateFinished] = useState();
 	const { isOpen, onOpen, onClose } = useDisclosure();
-
 	const [isAdmin, setIsAdmin] = useState(false);
+	const toast = useToast();
 
 	const addToLibrary = async () => {
 		const { data, error } = await supabase
@@ -67,7 +69,6 @@ export default function Novel({ novel }) {
 				{
 					user_id: session.user.id,
 					novel_id: id,
-					username: session.user.user_metadata.name,
 					status: status,
 					score: score,
 					progress: progress,
@@ -75,12 +76,6 @@ export default function Novel({ novel }) {
 					date_finished: dateFinished,
 				},
 			]);
-
-			if (error) {
-				console.log(error);
-			} else {
-				console.log(data);
-			}
 		} else {
 			const { data, error } = await supabase
 				.from("Library")
@@ -93,12 +88,10 @@ export default function Novel({ novel }) {
 				})
 				.eq("user_id", session.user.id)
 				.eq("novel_id", id);
-
-			if (error) {
-				console.log(error);
-			} else {
-				console.log(data);
-			}
+		}
+		if (!error) {
+			setIsInLibrary(true);
+			setStatus(status);
 		}
 	};
 
@@ -148,10 +141,8 @@ export default function Novel({ novel }) {
 				.eq("user_id", session.user.id)
 				.eq("novel_id", id);
 
-			if (error) {
-				console.log(error);
-			} else {
-				console.log(data);
+			if (!error) {
+				setIsInLibrary(false);
 			}
 		}
 	};
@@ -165,21 +156,25 @@ export default function Novel({ novel }) {
 				<link rel="icon" href="/favicon.ico" />
 			</Head>
 
-			<Banner title={novel.title} file={novel.cover} />
+			<Banner title={""} file={novel.cover} />
 
-			<div className="flex flex-col items-center">
-				<div className="flex flex-col items-center">
+			<div className="">
+				<div className="">
 					<img
 						src={novel.cover}
 						alt={novel.title}
 						width="286px"
 						height="400px"
 					/>
-					{session && !isInLibrary && (
-						<Button onClick={onOpen}>Add To Library</Button>
-					)}
-					{session && isInLibrary && <Button onClick={onOpen}>{status}</Button>}
-					{session && isAdmin && <EditNovel novel={novel} />}
+					<HStack>
+						{session && !isInLibrary && (
+							<Button onClick={onOpen}>Add To Library</Button>
+						)}
+						{session && isInLibrary && (
+							<Button onClick={onOpen}>{status}</Button>
+						)}
+						{session && isAdmin && <EditNovel novel={novel} />}
+					</HStack>
 
 					<Modal isOpen={isOpen} onClose={onClose}>
 						<ModalOverlay />
@@ -259,7 +254,13 @@ export default function Novel({ novel }) {
 									colorScheme="red"
 									onClick={async () => {
 										await deleteFromLibrary();
-										window.location.reload();
+										toast({
+											title: "Novel removed from library",
+											description: "Novel removed from library",
+											status: "error",
+											duration: 9000,
+											isClosable: true,
+										});
 										onClose();
 									}}
 									size="sm"
@@ -270,7 +271,23 @@ export default function Novel({ novel }) {
 									variant="ghost"
 									onClick={async () => {
 										await addToLibrary();
-										window.location.reload();
+										if (isInLibrary) {
+											toast({
+												title: "Novel added to library",
+												description: "Novel added to library",
+												status: "success",
+												duration: 5000,
+												isClosable: true,
+											});
+										} else {
+											toast({
+												title: "Novel updated in library",
+												description: "Novel updated in library",
+												status: "success",
+												duration: 5000,
+												isClosable: true,
+											});
+										}
 										onClose();
 									}}
 									size="sm"
@@ -319,12 +336,6 @@ function EditNovel({ novel }) {
 				description: description,
 			})
 			.eq("id", id);
-
-		if (error) {
-			console.log(error);
-		} else {
-			console.log(data);
-		}
 	};
 
 	return (

@@ -27,6 +27,7 @@ import {
 	NumberDecrementStepper,
 	Select,
 	Center,
+	useToast,
 } from "@chakra-ui/react";
 import Link from "next/link";
 import { useDisclosure } from "@chakra-ui/react";
@@ -40,7 +41,7 @@ export default function Profile() {
 	const [novels, setNovels] = useState([]);
 	const { isOpen, onOpen, onClose } = useDisclosure();
 	const [isInLibrary, setIsInLibrary] = useState(false);
-	const [status, setStatus] = useState("");
+	const [status, setStatus] = useState("Reading");
 	const [score, setScore] = useState();
 	const [progress, setProgress] = useState();
 	const [dateStarted, setDateStarted] = useState();
@@ -48,51 +49,43 @@ export default function Profile() {
 	const [novelTitle, setNovelTitle] = useState("");
 	const [selectedNovel, setSelectedNovel] = useState("");
 	const [user, setUser] = useState([]);
+	const toast = useToast();
 
 	const getProfile = async (profile) => {
-		const { data: user, error } = await supabase
+		if (!profile) return;
+		const { data, error } = await supabase
 			.from("Users")
 			.select("id, avatar")
 			.eq("name", profile);
 
-		if (error) {
-			console.log(error);
-		} else {
-			setUser(user[0]);
+		if (data) {
+			setUser(data[0]);
+
+			const { data: novels, error } = await supabase
+				.from("Library")
+				.select(
+					`
+				novel_id,
+				score,
+				progress,
+				status,
+				Novels (
+					id,
+					title,
+					cover
+				)`
+				)
+				.eq("user_id", data[0].id);
+
+			if (novels) {
+				setNovels(novels);
+			}
 		}
 	};
 
 	useEffect(() => {
-		if (profile) {
-			getNovels(user).then((novels) => {
-				setNovels(novels);
-			});
-			getProfile(profile);
-		}
-	}, [profile, user]);
-
-	async function getNovels(user) {
-		if (!user) return;
-
-		const { data: novels, error } = await supabase
-			.from("Library")
-			.select(
-				`
-			novel_id,
-			score,
-			progress,
-			status,
-			Novels (
-				id, 
-				title,
-				cover
-			)`
-			)
-			.eq("user_id", user.id)
-			.order("score", { ascending: false });
-
-		return novels;
-	}
+		getProfile(profile);
+	}, [profile]);
 
 	const getNovel = async (novel_id) => {
 		const { data: novel, error } = await supabase
@@ -140,12 +133,6 @@ export default function Profile() {
 			})
 			.eq("novel_id", novel_id)
 			.eq("user_id", session.user.id);
-
-		if (error) {
-			console.log(error);
-		} else {
-			console.log(data);
-		}
 	};
 
 	const deleteNovel = async (novel_id) => {
@@ -153,12 +140,10 @@ export default function Profile() {
 			.from("Library")
 			.delete()
 			.eq("novel_id", novel_id)
-			.eq("username", session.user.user_metadata.name);
+			.eq("user_id", session.user.id);
 
-		if (error) {
-			console.log(error);
-		} else {
-			console.log(data);
+		if (!error) {
+			setNovels(novels.filter((novel) => novel.novel_id !== novel_id));
 		}
 	};
 
@@ -225,9 +210,11 @@ export default function Profile() {
 												backgroundSize: "cover",
 												backgroundPosition: "center",
 											}}
-											className="m-0 cursor-pointer rounded-md p-0 hover:shadow-lg"
+											className="m-0 rounded-md p-0 hover:shadow-lg"
 										>
-											<FaEllipsisH className="h-full w-full cursor-pointer rounded-md p-2 text-white opacity-0 group-hover:bg-teal-700 group-hover:opacity-100" />
+											{profile == session?.user.user_metadata.name && (
+												<FaEllipsisH className="h-full w-full cursor-pointer rounded-md p-3 text-white opacity-0 group-hover:bg-teal-700 group-hover:opacity-100" />
+											)}
 										</div>
 
 										<Modal isOpen={isOpen} onClose={onClose}>
@@ -244,12 +231,9 @@ export default function Profile() {
 													>
 														<label>Status</label>
 														<Select
-															value={status}
 															onChange={(e) => setStatus(e.target.value)}
 															variant={"filled"}
-															defaultValue={
-																novel.status ? novel.status : "Reading"
-															}
+															value={novel.status ? novel.status : status}
 														>
 															<option value="Reading">Reading</option>
 															<option value="Plan to Read">Plan to Read</option>
@@ -311,8 +295,13 @@ export default function Profile() {
 														colorScheme="red"
 														onClick={async () => {
 															await deleteNovel(selectedNovel);
-															// refresh the page
-															window.location.reload();
+															toast({
+																title: "Novel Deleted",
+																description: "Novel has been deleted",
+																status: "error",
+																duration: 3000,
+																isClosable: true,
+															});
 															onClose();
 														}}
 														size="sm"
@@ -323,8 +312,13 @@ export default function Profile() {
 														variant="ghost"
 														onClick={async () => {
 															await updateNovel(selectedNovel);
-															// refresh the page
-															window.location.reload();
+															toast({
+																title: "Novel Updated",
+																description: "Novel has been updated",
+																status: "success",
+																duration: 3000,
+																isClosable: true,
+															});
 															onClose();
 														}}
 														size="sm"

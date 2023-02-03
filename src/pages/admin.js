@@ -45,7 +45,7 @@ export default function Admin() {
 				<link rel="icon" href="/favicon.ico" />
 			</Head>
 			<div>
-				{isAdmin ? (
+				{isAdmin && session ? (
 					<div>
 						<h1>Admin page</h1>
 						<Center>

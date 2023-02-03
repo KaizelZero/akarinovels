@@ -55,19 +55,13 @@ function Navbar() {
 					})
 					.eq("id", session.user.id);
 
-				if (updateError) {
-					console.log(updateError);
-				} else {
-					console.log(updatedUser);
-				}
-
 				const { data, error } = await supabase
 					.from("Users")
 					.select("admin")
 					.eq("id", session.user.id)
 					.single();
 
-				if (data.admin === true) {
+				if (data?.admin === true) {
 					setIsAdmin(true);
 				}
 			}

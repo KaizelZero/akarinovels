@@ -38,15 +38,24 @@ export default function Search() {
 	const handleSearch = debounce(async (search) => {
 		setLoading(true);
 
-		try {
-			const { data, error } = await supabase
+		if (search) {
+			setLoading(true);
+			const { data: novels, error } = await supabase
 				.from("Novels")
-				.select()
-				.textSearch("title", `'${search}'`);
-			setResults(data);
-		} catch (error) {
-			console.log(error);
-		} finally {
+				.select("id, title, cover")
+				.ilike("title", `%${search}%`)
+				.limit(5);
+
+			if (novels) {
+				setResults(novels);
+				setLoading(false);
+			}
+
+			if (error) {
+				console.log(error);
+			}
+		} else {
+			setResults([]);
 			setLoading(false);
 		}
 	}, 1000);
@@ -131,7 +140,7 @@ export default function Search() {
 					>
 						{results?.length > 0 ? (
 							<List>
-								{results.map((result) => (
+								{results?.map((result) => (
 									<li
 										key={result.id}
 										onMouseDown={(e) => {
