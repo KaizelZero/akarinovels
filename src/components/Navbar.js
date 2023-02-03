@@ -43,9 +43,24 @@ function Navbar() {
 					{
 						id: session.user.id,
 						name: session.user.user_metadata.name,
+						avatar: session.user.user_metadata.picture,
 					},
 				]);
 			} else {
+				const { data: updatedUser, error: updateError } = await supabase
+					.from("Users")
+					.update({
+						name: session.user.user_metadata.name,
+						avatar: session.user.user_metadata.picture,
+					})
+					.eq("id", session.user.id);
+
+				if (updateError) {
+					console.log(updateError);
+				} else {
+					console.log(updatedUser);
+				}
+
 				const { data, error } = await supabase
 					.from("Users")
 					.select("admin")

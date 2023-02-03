@@ -11,6 +11,7 @@ import {
 	FormLabel,
 	Input,
 } from "@chakra-ui/react";
+import Head from "next/head";
 
 export default function Admin() {
 	const session = useSession();
@@ -36,35 +37,43 @@ export default function Admin() {
 	}, [session]);
 
 	return (
-		<div>
-			{isAdmin ? (
-				<div>
-					<h1>Admin page</h1>
-					<Center>
-						<Box as="form" mt={4} className="w-2/3">
-							<FormControl>
-								<FormLabel htmlFor="title">Title</FormLabel>
-								<Input type="text" id="title" />
+		<>
+			<Head>
+				<title>Admin</title>
 
-								<FormLabel htmlFor="description">Description</FormLabel>
-								<Input type="text" id="description" />
+				<meta name="description" content="Admin page" />
+				<link rel="icon" href="/favicon.ico" />
+			</Head>
+			<div>
+				{isAdmin ? (
+					<div>
+						<h1>Admin page</h1>
+						<Center>
+							<Box as="form" mt={4} className="w-2/3">
+								<FormControl>
+									<FormLabel htmlFor="title">Title</FormLabel>
+									<Input type="text" id="title" />
 
-								<FormLabel htmlFor="cover">Cover</FormLabel>
-								<Input type="text" id="cover" />
+									<FormLabel htmlFor="description">Description</FormLabel>
+									<Input type="text" id="description" />
 
-								<FormLabel htmlFor="author">Author</FormLabel>
-								<Input type="text" id="author" />
+									<FormLabel htmlFor="cover">Cover</FormLabel>
+									<Input type="text" id="cover" />
 
-								<Button type="submit" mt={4}>
-									Submit
-								</Button>
-							</FormControl>
-						</Box>
-					</Center>
-				</div>
-			) : (
-				<p>Not admin</p>
-			)}
-		</div>
+									<FormLabel htmlFor="author">Author</FormLabel>
+									<Input type="text" id="author" />
+
+									<Button type="submit" mt={4}>
+										Submit
+									</Button>
+								</FormControl>
+							</Box>
+						</Center>
+					</div>
+				) : (
+					<p>Not admin</p>
+				)}
+			</div>
+		</>
 	);
 }
