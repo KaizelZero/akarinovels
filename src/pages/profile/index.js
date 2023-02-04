@@ -41,7 +41,7 @@ export default function Profile() {
 	const [novels, setNovels] = useState([]);
 	const { isOpen, onOpen, onClose } = useDisclosure();
 	const [isInLibrary, setIsInLibrary] = useState(false);
-	const [status, setStatus] = useState("Reading");
+	const [status, setStatus] = useState();
 	const [score, setScore] = useState();
 	const [progress, setProgress] = useState();
 	const [dateStarted, setDateStarted] = useState();
@@ -108,16 +108,16 @@ export default function Profile() {
 			.eq("novel_id", novel_id)
 			.eq("user_id", session.user.id);
 
+		console.log(novel);
+
 		if (novel?.length > 0) {
-			setIsInLibrary(true);
+			setSelectedNovel(novel[0].Novels.title);
 			setStatus(novel[0].status);
 			setScore(novel[0].score);
 			setProgress(novel[0].progress);
 			setDateStarted(novel[0].date_started);
 			setDateFinished(novel[0].date_finished);
 			setNovelTitle(novel[0].Novels.title);
-		} else {
-			setIsInLibrary(false);
 		}
 	};
 
@@ -133,6 +133,21 @@ export default function Profile() {
 			})
 			.eq("novel_id", novel_id)
 			.eq("user_id", session.user.id);
+
+		if (!error) {
+			setNovels(
+				novels.map((novel) => {
+					if (novel.novel_id === novel_id) {
+						novel.status = status;
+						novel.score = score;
+						novel.progress = progress;
+						novel.date_started = dateStarted;
+						novel.date_finished = dateFinished;
+					}
+					return novel;
+				})
+			);
+		}
 	};
 
 	const deleteNovel = async (novel_id) => {
@@ -231,9 +246,9 @@ export default function Profile() {
 													>
 														<label>Status</label>
 														<Select
-															onChange={(e) => setStatus(e.target.value)}
 															variant={"filled"}
-															value={novel.status ? novel.status : status}
+															onChange={(e) => setStatus(e.target.value)}
+															value={status}
 														>
 															<option value="Reading">Reading</option>
 															<option value="Plan to Read">Plan to Read</option>
