@@ -111,9 +111,13 @@ export default function Novel({ novel }) {
 					<Text as="h2" size="xl" mb={4}>
 						{novel.author}
 					</Text>
-					<Text as="h3" size="lg" mb={4} className="w-2/3">
-						{novel.description}
-					</Text>
+					<Text
+						as="h3"
+						size="lg"
+						mb={4}
+						className="w-2/3"
+						dangerouslySetInnerHTML={{ __html: novel.description }}
+					/>
 				</GridItem>
 			</Grid>
 		</>
