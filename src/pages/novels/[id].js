@@ -147,7 +147,7 @@ export default function Novel({ novel }) {
 									<Tr>
 										<Th>Cover</Th>
 										<Th>Title</Th>
-										<Th>Volume</Th>
+										<Th isNumeric>Volume</Th>
 									</Tr>
 								</Thead>
 								<Tbody>
@@ -164,7 +164,7 @@ export default function Novel({ novel }) {
 											<Td>
 												<Link href={`/books/${book.id}`}>{book.title}</Link>
 											</Td>
-											<Td>{book.volume}</Td>
+											<Td isNumeric>{book.volume}</Td>
 										</Tr>
 									))}
 								</Tbody>
