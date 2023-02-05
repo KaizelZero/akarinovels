@@ -108,8 +108,6 @@ export default function Profile() {
 			.eq("novel_id", novel_id)
 			.eq("user_id", session.user.id);
 
-		console.log(novel);
-
 		if (novel?.length > 0) {
 			setSelectedNovel(novel[0].Novels.title);
 			setStatus(novel[0].status);

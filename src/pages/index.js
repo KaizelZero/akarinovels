@@ -14,7 +14,12 @@ export default function Home() {
 				<meta name="viewport" content="width=device-width, initial-scale=1" />
 				<link rel="icon" href="/favicon.ico" />
 			</Head>
-			<Banner title={"Welcome"} file={"/images/HomeBanner.webp"} />
+			<Banner
+				title={"Welcome"}
+				src={
+					"https://byyeobrgzctlkancpgqd.supabase.co/storage/v1/object/public/banners/HomeBanner.webp"
+				}
+			/>
 		</>
 	);
 }

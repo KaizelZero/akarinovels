@@ -26,6 +26,14 @@ import {
 	GridItem,
 	Text,
 	VStack,
+	Center,
+	TableContainer,
+	Table,
+	Thead,
+	Tr,
+	Th,
+	Tbody,
+	Td,
 } from "@chakra-ui/react";
 import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
 import { useState, useEffect } from "react";
@@ -50,31 +58,41 @@ export async function getServerSideProps(context) {
 }
 
 export default function Novel({ novel }) {
-	const router = useRouter();
-	const { id } = router.query;
 	const session = useSession();
 	const [isInLibrary, setIsInLibrary] = useState(false);
-	const [status, setStatus] = useState("Reading");
-
 	const [isAdmin, setIsAdmin] = useState(false);
+	const [books, setBooks] = useState([]);
+
+	const checkAdmin = async () => {
+		if (!session?.user) return;
+
+		const { data, error } = await supabase
+			.from("Users")
+			.select("admin")
+			.eq("id", session.user.id)
+			.single();
+
+		if (data.admin) {
+			setIsAdmin(true);
+		}
+	};
 
 	useEffect(() => {
-		if (session?.user) {
-			const checkAdmin = async () => {
-				const { data, error } = await supabase
-					.from("Users")
-					.select("admin")
-					.eq("id", session.user.id)
-					.single();
-
-				if (data.admin) {
-					setIsAdmin(true);
-				}
-			};
-
-			checkAdmin();
-		}
+		checkAdmin();
 	}, [session]);
+
+	const getBooks = async ({ novel }) => {
+		const { data, error } = await supabase
+			.from("Books")
+			.select("*")
+			.eq("novel_id", novel.id);
+
+		if (data) setBooks(data);
+	};
+
+	useEffect(() => {
+		getBooks({ novel });
+	}, [novel]);
 
 	return (
 		<>
@@ -87,39 +105,72 @@ export default function Novel({ novel }) {
 
 			<Banner title={""} file={novel.cover} />
 
-			<Grid templateColumns="repeat(3, 1fr)">
-				<GridItem colSpan={1}>
-					<VStack>
-						<Image
-							src={novel.cover}
-							alt={novel.title}
-							width={300}
-							height={400}
-						/>
-						<HStack>
-							{session && !isInLibrary && <AddToLibrary novel={novel} />}
-							{session && isInLibrary && <AddToLibrary novel={novel} />}
-							{session && isAdmin && <EditNovel novel={novel} />}
-						</HStack>
-					</VStack>
-				</GridItem>
+			<div className="min-w-screen min-h-screen">
+				<Grid templateColumns="repeat(3, 1fr)">
+					<GridItem colSpan={1}>
+						<VStack>
+							<Image
+								src={novel.cover}
+								alt={novel.title}
+								width={300}
+								height={400}
+							/>
+							<HStack>
+								{session && !isInLibrary && <AddToLibrary novel={novel} />}
+								{session && isInLibrary && <AddToLibrary novel={novel} />}
+								{session && isAdmin && <EditNovel novel={novel} />}
+							</HStack>
+						</VStack>
+					</GridItem>
 
-				<GridItem colSpan={2}>
-					<Text as="h1" size="2xl" mb={4}>
-						{novel.title}
-					</Text>
-					<Text as="h2" size="xl" mb={4}>
-						{novel.author}
-					</Text>
-					<Text
-						as="h3"
-						size="lg"
-						mb={4}
-						className="w-2/3"
-						dangerouslySetInnerHTML={{ __html: novel.description }}
-					/>
-				</GridItem>
-			</Grid>
+					<GridItem colSpan={2}>
+						<Text as="h1" size="2xl" mb={4}>
+							{novel.title}
+						</Text>
+						<Text as="h2" size="xl" mb={4}>
+							{novel.author}
+						</Text>
+						<Text
+							as="h3"
+							size="lg"
+							mb={4}
+							className="w-2/3"
+							dangerouslySetInnerHTML={{ __html: novel.description }}
+						/>
+					</GridItem>
+				</Grid>
+				<Center className="mt-16">
+					<TableContainer className="w-2/3 rounded-lg border border-gray-400">
+						<Table>
+							<Thead>
+								<Tr>
+									<Th>Cover</Th>
+									<Th>Title</Th>
+									<Th>Volume</Th>
+								</Tr>
+							</Thead>
+							<Tbody>
+								{books.map((book) => (
+									<Tr>
+										<Td>
+											{/* <Image
+											src={book.cover}
+											alt={book.title}
+											width={100}
+											height={150}
+										/> */}
+										</Td>
+										<Td>
+											<Link href={`/books/${book.id}`}>{book.title}</Link>
+										</Td>
+										<Td>{book.volume}</Td>
+									</Tr>
+								))}
+							</Tbody>
+						</Table>
+					</TableContainer>
+				</Center>
+			</div>
 		</>
 	);
 }

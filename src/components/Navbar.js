@@ -31,42 +31,45 @@ function Navbar() {
 		supabase.auth.signOut();
 	}
 
-	supabase.auth.onAuthStateChange(async (event, session) => {
-		if (event === "SIGNED_IN") {
-			const { data, error } = await supabase
-				.from("Users")
-				.select("id")
-				.eq("id", session.user.id);
+	async function addUser() {
+		const { data, error } = await supabase
+			.from("Users")
+			.select("id, admin")
+			.eq("id", session?.user.id)
+			.single();
 
-			if (data.length === 0) {
-				const { data, error } = await supabase.from("Users").insert([
-					{
-						id: session.user.id,
-						name: session.user.user_metadata.name,
-						avatar: session.user.user_metadata.picture,
-					},
-				]);
-			} else {
-				const { data: updatedUser, error: updateError } = await supabase
-					.from("Users")
-					.update({
-						name: session.user.user_metadata.name,
-						avatar: session.user.user_metadata.picture,
-					})
-					.eq("id", session.user.id);
-
-				const { data, error } = await supabase
-					.from("Users")
-					.select("admin")
-					.eq("id", session.user.id)
-					.single();
-
-				if (data?.admin === true) {
-					setIsAdmin(true);
-				}
-			}
+		if (data?.admin === true) {
+			setIsAdmin(true);
 		}
-	});
+
+		if (!data) {
+			const { data, error } = await supabase.from("Users").insert([
+				{
+					id: session.user.id,
+					name: session.user.user_metadata.name,
+					avatar: session.user.user_metadata.picture,
+				},
+			]);
+		} else {
+			const { data: updatedUser, error: updateError } = await supabase
+				.from("Users")
+				.update({
+					name: session.user.user_metadata.name,
+					avatar: session.user.user_metadata.picture,
+				})
+				.eq("id", session.user.id);
+		}
+
+		if (error) {
+			console.log(error);
+		}
+	}
+
+	useEffect(() => {
+		if (session) {
+			addUser();
+		}
+	}, [session]);
 
 	return (
 		<Flex
@@ -109,6 +112,7 @@ function Navbar() {
 								as={Avatar}
 								colorScheme="pink"
 								src={session.user.user_metadata.picture}
+								name={session.user.user_metadata.name}
 								size="md"
 							/>
 							<MenuList>

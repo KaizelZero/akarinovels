@@ -1,6 +1,6 @@
 // takes in two strings
-export default function Banner({ file, title }) {
-	const backgroundImage = file;
+export default function Banner({ src, title }) {
+	const backgroundImage = src;
 	return (
 		<div
 			className="mb-8 h-bannerHeight"

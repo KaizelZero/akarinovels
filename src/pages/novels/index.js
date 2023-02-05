@@ -51,7 +51,12 @@ export default function Novels({ novels }) {
 				<link rel="icon" href="/favicon.ico" />
 			</Head>
 
-			<Banner title={"Novels"} file={"/images/NovelBanner.webp"} />
+			<Banner
+				title={"Novels"}
+				src={
+					"https://byyeobrgzctlkancpgqd.supabase.co/storage/v1/object/public/banners/NovelBanner.webp"
+				}
+			/>
 
 			<div className="flex min-h-screen flex-col items-center">
 				<HStack className="mb-8">
