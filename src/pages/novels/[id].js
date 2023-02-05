@@ -154,12 +154,12 @@ export default function Novel({ novel }) {
 									{books.map((book) => (
 										<Tr key={book.id}>
 											<Td>
-												{/* <Image
-											src={book.cover}
-											alt={book.title}
-											width={100}
-											height={150}
-										/> */}
+												<Image
+													src={book.cover}
+													alt={book.title}
+													width={100}
+													height={150}
+												/>
 											</Td>
 											<Td>
 												<Link href={`/books/${book.id}`}>{book.title}</Link>
