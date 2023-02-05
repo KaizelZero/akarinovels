@@ -103,7 +103,7 @@ export default function Novel({ novel }) {
 				<link rel="icon" href="/favicon.ico" />
 			</Head>
 
-			<Banner title={""} file={novel.cover} />
+			<Banner title={""} src={novel.cover} />
 
 			<div className="min-w-screen min-h-screen">
 				<Grid templateColumns="repeat(3, 1fr)">
@@ -139,37 +139,39 @@ export default function Novel({ novel }) {
 						/>
 					</GridItem>
 				</Grid>
-				<Center className="mt-16">
-					<TableContainer className="w-2/3 rounded-lg border border-gray-400">
-						<Table>
-							<Thead>
-								<Tr>
-									<Th>Cover</Th>
-									<Th>Title</Th>
-									<Th>Volume</Th>
-								</Tr>
-							</Thead>
-							<Tbody>
-								{books.map((book) => (
+				{books.length > 0 && (
+					<Center className="mt-16">
+						<TableContainer className="w-2/3 rounded-lg border border-gray-400">
+							<Table>
+								<Thead>
 									<Tr>
-										<Td>
-											{/* <Image
+										<Th>Cover</Th>
+										<Th>Title</Th>
+										<Th>Volume</Th>
+									</Tr>
+								</Thead>
+								<Tbody>
+									{books.map((book) => (
+										<Tr>
+											<Td>
+												{/* <Image
 											src={book.cover}
 											alt={book.title}
 											width={100}
 											height={150}
 										/> */}
-										</Td>
-										<Td>
-											<Link href={`/books/${book.id}`}>{book.title}</Link>
-										</Td>
-										<Td>{book.volume}</Td>
-									</Tr>
-								))}
-							</Tbody>
-						</Table>
-					</TableContainer>
-				</Center>
+											</Td>
+											<Td>
+												<Link href={`/books/${book.id}`}>{book.title}</Link>
+											</Td>
+											<Td>{book.volume}</Td>
+										</Tr>
+									))}
+								</Tbody>
+							</Table>
+						</TableContainer>
+					</Center>
+				)}
 			</div>
 		</>
 	);
