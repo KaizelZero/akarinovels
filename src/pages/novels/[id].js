@@ -112,7 +112,7 @@ export default function Novel({ novel }) {
 							<Image
 								src={novel.cover}
 								alt={novel.title}
-								width={300}
+								width={286}
 								height={400}
 							/>
 							<HStack>
@@ -152,7 +152,7 @@ export default function Novel({ novel }) {
 								</Thead>
 								<Tbody>
 									{books.map((book) => (
-										<Tr>
+										<Tr key={book.id}>
 											<Td>
 												{/* <Image
 											src={book.cover}
@@ -335,7 +335,7 @@ function AddToLibrary({ novel }) {
 								placeholder="Select Date"
 								size="md"
 								type="date"
-								value={dateStarted}
+								value={dateStarted || ""}
 								onChange={(e) => setDateStarted(e.target.value)}
 							/>
 
@@ -344,7 +344,7 @@ function AddToLibrary({ novel }) {
 								placeholder="Select Date"
 								size="md"
 								type="date"
-								value={dateFinished}
+								value={dateFinished || ""}
 								onChange={(e) => setDateFinished(e.target.value)}
 							/>
 						</FormControl>
