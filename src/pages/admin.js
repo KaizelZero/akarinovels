@@ -207,8 +207,6 @@ function CreateBookForm() {
 		}
 	};
 
-	console.log(novel);
-
 	return (
 		<div>
 			<Center>

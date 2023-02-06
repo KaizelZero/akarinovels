@@ -1,4 +1,3 @@
-import { useRouter } from "next/router";
 import supabase from "@/utils/supabase";
 import Head from "next/head";
 import Banner from "@/components/Banner";
@@ -124,17 +123,10 @@ export default function Novel({ novel }) {
 					</GridItem>
 
 					<GridItem colSpan={2}>
-						<Text as="h1" size="2xl" mb={4}>
-							{novel.title}
-						</Text>
-						<Text as="h2" size="xl" mb={4}>
-							{novel.author}
-						</Text>
+						<Text className="mb-4 text-2xl font-bold">{novel.title}</Text>
+						<Text className="mb-4 text-xl font-semibold">{novel.author}</Text>
 						<Text
-							as="h3"
-							size="lg"
-							mb={4}
-							className="w-2/3"
+							className="mb-4 w-2/3 text-lg"
 							dangerouslySetInnerHTML={{ __html: novel.description }}
 						/>
 					</GridItem>
