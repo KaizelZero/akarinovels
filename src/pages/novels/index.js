@@ -68,10 +68,9 @@ export default function Novels({ novels }) {
 							value={search}
 							width="20rem"
 						/>
-						<InputLeftElement
-							pointerEvents="none"
-							children={<HiSearch color="gray.300" />}
-						/>
+						<InputLeftElement pointerEvents="none">
+							<HiSearch color="gray.300" />
+						</InputLeftElement>
 					</InputGroup>
 				</HStack>
 

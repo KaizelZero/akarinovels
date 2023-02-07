@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
-import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
+import { useSession } from "@supabase/auth-helpers-react";
+import supabase from "@/utils/supabase";
 import { useState, useEffect } from "react";
 import {
 	Flex,
@@ -16,7 +17,6 @@ import {
 import Search from "./Search";
 
 function Navbar() {
-	const supabase = useSupabaseClient();
 	const session = useSession();
 	const lineColor = useColorModeValue("black", "#EAEAEA");
 	const [isAdmin, setIsAdmin] = useState(false);
@@ -31,41 +31,40 @@ function Navbar() {
 		supabase.auth.signOut();
 	}
 
-	async function addUser() {
-		const { data, error } = await supabase
-			.from("Users")
-			.select("id, admin")
-			.eq("id", session?.user.id)
-			.single();
-
-		if (data?.admin === true) {
-			setIsAdmin(true);
-		}
-
-		if (!data) {
-			const { data, error } = await supabase.from("Users").insert([
-				{
-					id: session.user.id,
-					name: session.user.user_metadata.name,
-					avatar: session.user.user_metadata.picture,
-				},
-			]);
-		} else {
-			const { data: updatedUser, error: updateError } = await supabase
-				.from("Users")
-				.update({
-					name: session.user.user_metadata.name,
-					avatar: session.user.user_metadata.picture,
-				})
-				.eq("id", session.user.id);
-		}
-
-		if (error) {
-			console.log(error);
-		}
-	}
-
 	useEffect(() => {
+		async function addUser() {
+			const { data, error } = await supabase
+				.from("Users")
+				.select("id, admin")
+				.eq("id", session?.user.id)
+				.single();
+
+			if (data?.admin === true) {
+				setIsAdmin(true);
+			}
+
+			if (!data) {
+				const { data, error } = await supabase.from("Users").insert([
+					{
+						id: session.user.id,
+						name: session.user.user_metadata.name,
+						avatar: session.user.user_metadata.picture,
+					},
+				]);
+			} else {
+				const { data: updatedUser, error: updateError } = await supabase
+					.from("Users")
+					.update({
+						name: session.user.user_metadata.name,
+						avatar: session.user.user_metadata.picture,
+					})
+					.eq("id", session.user.id);
+			}
+
+			if (error) {
+				console.log(error);
+			}
+		}
 		if (session) {
 			addUser();
 		}
